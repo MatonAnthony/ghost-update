@@ -2,23 +2,24 @@
 
 import sys
 import os
+import argparse
 import re
 import linecache
 import subprocess
 import zipfile
 import shutil
 
-if len(sys.argv) != 2:
-    print('''Invalid usage :
-        Usage : ghost-update /path/to/your/ghost
-        ''')
-    sys.exit(1)
+# Argument parser
+parser = argparse.ArgumentParser(description='Upgrade a ghost powered blog')
+parser.add_argument('path', metavar='/path/to/ghost', type=str,
+                    help='The path to your ghost instance')
+arguments = parser.parse_args()
 
-ghostPath = sys.argv[1]
-packageJson = os.path.join(ghostPath, 'package.json')
+arguments.path = arguments.path
+packageJson = os.path.join(arguments.path, 'package.json')
 tmpPath = '/tmp/ghost'
 
-if os.path.exists(ghostPath) and os.path.isdir(ghostPath):
+if os.path.exists(arguments.path) and os.path.isdir(arguments.path):
     if os.path.exists(packageJson):
         pattern = re.compile('"name": "ghost"')
         line = linecache.getline(packageJson, 2)
@@ -37,18 +38,19 @@ if os.path.exists(ghostPath) and os.path.isdir(ghostPath):
 
             # Delete old files
             print("Removal of deprecated files")
-            os.remove(os.path.join(ghostPath, 'index.js'))
-            os.remove(os.path.join(ghostPath, 'package.json'))
-            os.remove(os.path.join(ghostPath, 'npm-shrinkwrap.json'))
-            shutil.rmtree(os.path.join(ghostPath, 'core'))
+            os.remove(os.path.join(arguments.path, 'index.js'))
+            os.remove(os.path.join(arguments.path, 'package.json'))
+            os.remove(os.path.join(arguments.path, 'npm-shrinkwrap.json'))
+            shutil.rmtree(os.path.join(arguments.path, 'core'))
 
             # Putting new files in place of the old one
             print("Copying new files")
-            shutil.copytree(os.path.join(tmpPath, 'core'), ghostPath, True)
-            shutil.copy2(os.path.join(tmpPath, 'index.js'), ghostPath)
-            shutil.copy2(os.path.join(tmpPath, 'package.json'), ghostPath)
+            shutil.copytree(os.path.join(tmpPath, 'core'),
+                            arguments.path, True)
+            shutil.copy2(os.path.join(tmpPath, 'index.js'), arguments.path)
+            shutil.copy2(os.path.join(tmpPath, 'package.json'), arguments.path)
             shutil.copy2(os.path.join(tmpPath, 'npm-shrinkwrap.json'),
-                         ghostPath)
+                         arguments.path)
 
             # Run npm to ensure dependencies are upgraded
             # Also displaying output from npm
