@@ -46,7 +46,7 @@ if os.path.exists(arguments.path) and os.path.isdir(arguments.path):
             # Putting new files in place of the old one
             print("Copying new files")
             shutil.copytree(os.path.join(tmpPath, 'core'),
-                            arguments.path, True)
+                            os.path.join(arguments.path, 'core'), True)
             shutil.copy2(os.path.join(tmpPath, 'index.js'), arguments.path)
             shutil.copy2(os.path.join(tmpPath, 'package.json'), arguments.path)
             shutil.copy2(os.path.join(tmpPath, 'npm-shrinkwrap.json'),
@@ -55,7 +55,7 @@ if os.path.exists(arguments.path) and os.path.isdir(arguments.path):
             # Run npm to ensure dependencies are upgraded
             # Also displaying output from npm
             print("Running npm install --production")
-            with subprocess.Popen('npm install --production',
+            with subprocess.Popen(['npm', 'install', '--production'],
                                   stdout=subprocess.PIPE, bufsize=1,
                                   universal_newlines=True) as process:
                 for line in process.stdout:
