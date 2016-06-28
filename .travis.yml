@@ -1,0 +1,11 @@
+language: python
+
+python:
+  - "3.5"
+
+install:
+  pip install flake8
+
+script:
+  # Run PEP8 ignoring E402 Errors on all python files
+  - find . -name \*.py -exec flake8 --ignore=E402{} +
