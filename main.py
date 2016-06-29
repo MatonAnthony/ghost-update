@@ -8,11 +8,15 @@ import linecache
 import subprocess
 import zipfile
 import shutil
+import shlex
 
 # Argument parser
 parser = argparse.ArgumentParser(description='Upgrade a ghost powered blog')
 parser.add_argument('path', metavar='/path/to/ghost', type=str,
                     help='The path to your ghost instance')
+parser.add_argument('-a', '--after', help='Add a command to be run after the'
+                                          'end of this script',
+                    metavar='"command to run"')
 arguments = parser.parse_args()
 
 arguments.path = arguments.path
@@ -61,10 +65,18 @@ if os.path.exists(arguments.path) and os.path.isdir(arguments.path):
                 for line in process.stdout:
                     print(line)
 
-            # Ghost upgrade is finished
-            print("--- Upgrade finished, don't forget to re-run "
-                  "the daemon ---")
-            exit(0)
+            if arguments.after is None:
+                # Ghost upgrade is finished
+                print("--- Upgrade finished, don't forget to re-run "
+                      "the daemon ---")
+                exit(0)
+            else:
+                # Run the command asked by --after
+                with subprocess.Popen(shlex.split(arguments.after),
+                                      stdout=subprocess.PIPE, bufsize=1,
+                                      universal_newlines=True) as process:
+                    for line in process.stdout:
+                        print(line)
 
         else:
             print("This is not a ghost instance")
