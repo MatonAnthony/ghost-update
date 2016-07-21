@@ -8,6 +8,7 @@ import subprocess
 import zipfile
 import shutil
 import shlex
+import tempfile
 
 
 def arguments():
@@ -92,24 +93,24 @@ def after(command):
 
 def run():
     """ Main function of the script """
-    tmp_path = '/tmp/ghost'
-    args = arguments()
-    if is_ghost_instance(args.path):
-        prepare_update(tmp_path)
-        apply_core_update(tmp_path, args.path)
-        npm_update()
+    with tempfile.TemporaryDirectory as tmp_path:
+        args = arguments()
+        if is_ghost_instance(args.path):
+            prepare_update(tmp_path)
+            apply_core_update(tmp_path, args.path)
+            npm_update()
 
-        if args.after is None:
-            # Ghost upgrade is finished
-            print("--- Upgrade finished, don't forget to re-run "
-                  "the daemon ---")
+            if args.after is None:
+                # Ghost upgrade is finished
+                print("--- Upgrade finished, don't forget to re-run "
+                      "the daemon ---")
+            else:
+                after(args.after)
+
+            exit(0)
         else:
-            after(args.after)
-
-        exit(0)
-    else:
-        print("This is not a ghost instance")
-        exit(1)
+            print("This is not a ghost instance")
+            exit(1)
 
 if __name__ == '__main__':
     run()
